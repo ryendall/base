@@ -1,0 +1,57 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Some hosts may require you to use the `RewriteBase` directive.
+  # Determine the RewriteBase automatically and set it as environment variable.
+  # If you are using Apache aliases to do mass virtual hosting or installed the
+  # project in a subdirectory, the base path will be prepended to allow proper
+  # resolution of the index.php file and to redirect to the correct URI. It will
+  # work in environments without path prefix as well, providing a safe, one-size
+  # fits all solution. But as you do not need it in this case, you can comment
+  # the following 2 lines to eliminate the overhead.
+  RewriteCond %{REQUEST_URI}::$1 ^(/.+)/(.*)::\2$
+  RewriteRule ^(.*) - [E=BASE:%1]
+  
+  # If the above doesn't work you might need to set the `RewriteBase` directive manually, it should be the
+  # absolute physical path to the directory that contains this htaccess file.
+  # RewriteBase /
+
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule ^ index.php [QSA,L]
+</IfModule>
+
+<Files 403.shtml>
+order allow,deny
+allow from all
+</Files>
+
+deny from 193.201.224.0/24
+deny from 5.188.210.0/24
+deny from 86.21.103.0/24
+deny from 46.229.161.131
+deny from 117.2.97.232
+
+deny from 51.68.154.97
+deny from 185.220.101.0/24
+deny from 185.195.16.0/24
+deny from 185.217.68.0/24
+deny from 194.135.220.0/24
+deny from 82.102.24.0/24
+deny from 185.136.159.0/24
+deny from 141.226.212.0/24
+deny from 203.133.171.0/24
+deny from 199.249.230.0/24
+deny from 178.159.37.0/24
+deny from 176.10.99.0/24
+deny from 162.247.74.0/24
+deny from 109.70.100.0/24
+deny from 23.129.64.0/24
+deny from 5.9.32.0/24
+deny from 209.95.51.0/24
+deny from 91.237.52.0/24
+deny from 145.239.68.0/24
+deny from 95.55.0.0/16
+deny from 95.52.120.0/24
+deny from 5.188.84.0/24
+deny from 219.145.144.65
+deny from 198.144.149.0/24

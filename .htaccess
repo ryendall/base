@@ -1,0 +1,4 @@
+RewriteEngine On
+       # web services
+        RewriteRule ^(.+)$ public/index.php [QSA,L]
+
