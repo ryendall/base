@@ -45,7 +45,7 @@ use \im\helpers\Arrays;
 
 class Base {
 
-    const LIST_ADMIN_USERS = [450=>'richard@imutual', 57=>'sue@imutual', 827=>'michelle@imutual'];
+    const LIST_ADMIN_USERS = [];
     const FOREVER_DATE = '2030-01-01';
 
     protected $db;
@@ -136,9 +136,14 @@ class Base {
      * Return associative array of all records in form:
      * ['key'=>'title']
      */
-    public function getAllTitles() {
+    public function getAllTitles(string $idField=null, string $titleField=null) {
+        if ( !$idField ) $idField = $this->idField();
+        if ( !isset(static::DB_MODEL[$idField]) ) throw new Exception('Invalid idField');
+        if ( !$titleField ) $titleField = $this->titleField();
+        if ( !isset(static::DB_MODEL[$titleField]) ) throw new Exception('Invalid titleField');
+
         $data=[];
-        $sql = 'SELECT '.$this->idField().' as id, '.$this->titleField().' as title FROM '.static::DB_TABLE.' ORDER BY '.$this->titleField();
+        $sql = 'SELECT '.$idField.' as id, '.$titleField.' as title FROM '.static::DB_TABLE.' ORDER BY '.$this->titleField();
         $result=$this->db->sql_query($sql);
         foreach($this->db->sql_fetchrowset($result) as $row) {
             $data[$row['id']]=$row['title'];
@@ -176,6 +181,12 @@ class Base {
                     case 'num':
                     case 'uts':
                         if ( !is_numeric($value) ) $this->setError($field,'Must be numeric');
+                        if ( isset($def['min']) && $value < $def['min'] ) {
+                            $this->setError($field,'Minimum of '.$def['min']);
+                        }
+                        if ( isset($def['max']) && $value > $def['max'] ) {
+                            $this->setError($field,'Maximum of '.$def['max']);
+                        }
                         break;
 
                     case 'dat':
@@ -183,6 +194,12 @@ class Base {
                         break;
 
                     default;
+                        if ( isset($def['min']) && strlen($value) < $def['min'] ) {
+                            $this->setError($field,'Minimum of '.$def['min'].' characters');
+                        }
+                        if ( isset($def['max']) && strlen($value) > $def['max'] ) {
+                            $this->setError($field,'Maximum of '.$def['max'].' characters');
+                        }
                         break;
                 }
 
@@ -194,6 +211,19 @@ class Base {
                     $found = $this->find([$field=>$value]);
                     if ( count($found) > 0 ) {
                         $this->setError($field,'Value already exists. Must be unique');
+                    }
+                }
+
+                if ( !empty($def['class']) && isset($this->getChangedData()[$field]) ) {
+                    // Foreign key. Check value exists in related table
+                    $classPath = $this->classPath($def['class']);
+                    $obj = new $classPath($this->db);
+                    try {
+                        if ( !$obj->read($value) ) {
+                            $this->setError($field,'Value not found in dataset');
+                        }
+                    } catch (Exception $e) {
+                        $this->setError($field,'Value not found in dataset');
                     }
                 }
             }
@@ -493,14 +523,22 @@ class Base {
         return static::PRIMARY_KEYS[0];
     }
 
+    /**
+     * Prepend full namespace to class name
+    */
+    protected function classPath($class) {
+        if ( strpos($class,'\\') === false ) $class = __NAMESPACE__ . '\\' . $class;
+        return $class;
+    }
+
     public function getObject(string $field) {
         if ( !isset($this->objects[$field]) ) {
             $class = static::DB_MODEL[$field]['class'] ?? null;
             if ( !$class ) throw new \Exception('getObject called on field '.$field.' with no class defined');
-            if ( strpos($class,'\\') === false ) $class = __NAMESPACE__ . '\\' . $class;
+            $classPath = $this->classPath($class);
             // (Re)load instance of related object using value as primary key
             $value = $this->data[$field] ?? $this->existingData[$field] ?? null;
-            $this->objects[$field] = new $class($this->db, $value);
+            $this->objects[$field] = new $classPath($this->db, $value);
         }
         return $this->objects[$field];
     }

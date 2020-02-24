@@ -1,7 +1,5 @@
 <?php
-$displayErrorDetails = ( getenv('IM_ENVIRONMENT') !== 'production' );
-define('DB_FORUM_NAME', getenv('DB_FORUM_NAME'));
-define('DB_FRONTEND_NAME', getenv('DB_FRONTEND_NAME'));
+$displayErrorDetails = ( getenv('IM_ENVIRONMENT') == 'development' );
 return [
     'settings' => [
         'displayErrorDetails' => $displayErrorDetails, // set to false in production

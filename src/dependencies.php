@@ -18,12 +18,21 @@ $container['errorHandler'] = function ($c) {
     };
 };
 
+// custom PHP error handler
+$container['phpErrorHandler'] = function ($c) {
+    return function ($request, $response, $error) use ($c) {
+        $c['logger']->critical($error->getMessage().print_r($error->getTrace(),true));
+        return $response->withStatus(500)
+            ->withHeader('Content-Type', 'text/json')
+            ->write(json_encode(['error' => 'An error occurred']));
+    };
+};
+
 // monolog
 $container['logger'] = function ($c) {
     $settings = $c->get('settings')['logger'];
     $logger = new Monolog\Logger($settings['name']);
     $logger->pushProcessor(new Monolog\Processor\UidProcessor());
-    $logger->pushHandler(new Monolog\Handler\SendGridHandler('imutual', getenv('SENDGRID_PWD'), 'richard@imutual.co.uk', getenv('ADMIN_ALERT_EMAIL'), getenv('IM_ENVIRONMENT').' API critical error', Monolog\Logger::CRITICAL));
     $logger->pushHandler(new Monolog\Handler\StreamHandler($settings['path'], $settings['level']));
     return $logger;
 };

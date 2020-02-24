@@ -1,19 +1,14 @@
 <?php
 // Application middleware
-
+use im\model\ApiUsers;
 // Authentication
-$users=[];
-$sql = 'SELECT * FROM api_users';
-$result = $container['db']->sql_query($sql);
-while ( $row=$container['db']->sql_fetchrow($result) ) {
-    $users[$row['username']] = $row['password'];
-}
-
+$obj = new ApiUsers($container['db']);
+$users=$obj->getAllTitles('username','password');
 $app->add(new \Tuupola\Middleware\HttpBasicAuthentication([
     "path" => ["/"],
-    "ignore" => ["/ping", "/health", "/bank/notify", "/bank/oauthCode"],
+    "ignore" => ["/ping", "/health"],
     "realm" => "Protected",
-    "secure" => getenv('IM_ENVIRONMENT') == 'production',
+    "secure" => getenv('IM_ENVIRONMENT') !== 'development',
     "users" => $users
 ]));
 unset($users);
