@@ -1,4 +1,11 @@
-drop table commodity; drop table class; drop table family; drop table segment;
+ CREATE TABLE `api_users` (
+  `user_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `username` varchar(255) DEFAULT NULL,
+  `password` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`user_id`)
+);
+
+insert into api_users (username,password) values ('testuser','testpass');
 
 CREATE TABLE `commodity` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,

@@ -40,7 +40,7 @@ class BaseController {
             $code = 201;
         } catch(Exception $e) {
             $code = $e->getCode();
-            $result = ['error'=>json_decode($e->getMessage())];
+            $result = ['error'=>$this->exceptionMessage($e)];
         }
         return $response->withStatus($code)->withJson($result);
     }
@@ -59,7 +59,7 @@ class BaseController {
             $code = 200;
         } catch(Exception $e) {
             $code = $e->getCode();
-            $result = ['error'=>json_decode($e->getMessage())];
+            $result = ['error'=>$this->exceptionMessage($e)];
         }
         return $response->withStatus($code)->withJson($result);
     }
@@ -74,7 +74,7 @@ class BaseController {
             $code = 200;
         } catch(Exception $e) {
             $code = $e->getCode();
-            $result = ['error'=>json_decode($e->getMessage())];
+            $result = ['error'=>$this->exceptionMessage($e)];
         }
         return $response->withStatus($code)->withJson($result);
     }
@@ -89,7 +89,7 @@ class BaseController {
             $code = 200;
         } catch(Exception $e) {
             $code = $e->getCode();
-            $result = ['error'=>json_decode($e->getMessage())];
+            $result = ['error'=>$this->exceptionMessage($e)];
         }
         return $response->withStatus($code)->withJson($result);
     }
@@ -100,7 +100,7 @@ class BaseController {
             $code = 200;
         } catch(Exception $e) {
             $code = $e->getCode();
-            $result = ['error'=>json_decode($e->getMessage())];
+            $result = ['error'=>$this->exceptionMessage($e)];
         }
         return $response->withStatus($code)->withJson($result);
     }
@@ -112,6 +112,28 @@ class BaseController {
     protected function jsonError() {
         $msg = json_last_error_msg();
         if ( $msg == 'No error' ) $msg = 'Bad input';
+    }
+
+    protected function exceptionMessage(Exception $e) {
+        if ( $msg = $e->getMessage() ) {
+            $decoded = json_decode($msg);
+            if ( $decoded && json_last_error() == JSON_ERROR_NONE ) {
+                $msg = $decoded;
+            }
+            return $msg;
+        }
+        switch($e->getCode()) {
+            case '401':
+                $msg = 'Unauthorized';
+                break;
+            case '404':
+                $msg = 'Not found';
+                break;
+            default:
+                $msg = 'An error occurred';
+                break;
+        }
+        return $msg;
     }
 }
 

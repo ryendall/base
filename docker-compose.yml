@@ -12,6 +12,10 @@ services:
         command: php -S 0.0.0.0:8080 -t public
         environment:
             docker: "true"
+            DB_BACKEND_NAME: "testdb"
+            DB_BACKEND_USER: "testuser"
+            DB_BACKEND_PASSWORD: "testpassword"
+            IM_ENVIRONMENT: "development"
         ports:
             - 8080:8080
         volumes:
@@ -27,6 +31,9 @@ services:
             TZ: "Europe/London"
             MYSQL_ALLOW_EMPTY_PASSWORD: "no"
             MYSQL_ROOT_PASSWORD: "rootpwd"
-            MYSQL_USER: 'testuser'
-            MYSQL_PASSWORD: 'testpassword'
-            MYSQL_DATABASE: 'testdb'
+            MYSQL_USER: "testuser"
+            MYSQL_PASSWORD: "testpassword"
+            MYSQL_DATABASE: "testdb"
+
+volumes:
+    - ./scripts/dbInit.sql:/docker-entrypoint-initdb.d/dbInit.sql:ro
