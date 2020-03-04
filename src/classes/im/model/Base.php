@@ -9,10 +9,10 @@
  * == HOW TO USE BASE METHODS ==
  *
  * READ an existing record from the database, either:
- *  $obj = new CLASS($db);
+ *  $obj = new CLASS($container);
  *  $obj->read($primary_key);
  * Or (shortcut):
- *  $obj = new CLASS($db, $primary_key);
+ *  $obj = new CLASS($container, $primary_key);
  * (Note: with compound primary keys, use setKey($array) instead)
  * Then grab data using:
  *  $data = $obj->get();
@@ -42,12 +42,11 @@ use \Exception;
 use \im\exception\ValidationException;
 use \im\helpers\Strings;
 use \im\helpers\Arrays;
+use DI\Container;
 
 class Base {
 
-    const LIST_ADMIN_USERS = [];
-    const FOREVER_DATE = '2030-01-01';
-
+    protected $container;
     protected $db;
     protected $key;
     protected $data = []; // current state of object, with any new/changed data
@@ -64,8 +63,9 @@ class Base {
     protected $selectUrl;
     public    $traceLog; // used for debugging
 
-    function __construct(\sql_db $db, int $primary_key = null) {
-        $this->db = $db;
+    function __construct(Container $container, int $primary_key = null) {
+        $this->container = $container;
+        $this->db = $container->get('db');
         $this->now = gmdate('Y-m-d H:i:s');
         if ( $primary_key ) $this->read($primary_key); // Load existing db record
     }
@@ -217,22 +217,24 @@ class Base {
                 if ( !empty($def['class']) && isset($this->getChangedData()[$field]) ) {
                     // Foreign key. Check value exists in related table
                     $classPath = $this->classPath($def['class']);
-                    $obj = new $classPath($this->db);
+                    $obj = new $classPath($this->container);
                     try {
-                        if ( !$obj->read($value) ) {
-                            $this->setError($field,'Value not found in dataset');
+                        if ( $value === 0 ) {
+                            trigger_error($this->getClassName().' #'.$this->id().'=0, should be null');
+                            $value = null;
+                        } elseif ( !$obj->read($value) ) {
+                            $this->setError($field,'Value not found in dataset: '.$value);
                         }
                     } catch (Exception $e) {
-                        $this->setError($field,'Value not found in dataset');
+                        $this->setError($field,'Value not found in dataset: '.$value);
                     }
                 }
             }
         }
+        return $this->postValidation($fullValidation);
+    }
 
-        if ( method_exists($this, 'customValidate') ) {
-            $this->customValidate();
-        }
-
+    protected function postValidation($fullValidation) {
         if ( $this->isValid() ) {
             if ( $fullValidation ) $this->validationComplete = true;
             return true;
@@ -538,7 +540,7 @@ class Base {
             $classPath = $this->classPath($class);
             // (Re)load instance of related object using value as primary key
             $value = $this->data[$field] ?? $this->existingData[$field] ?? null;
-            $this->objects[$field] = new $classPath($this->db, $value);
+            $this->objects[$field] = new $classPath($this->container, $value);
         }
         return $this->objects[$field];
     }
@@ -681,6 +683,26 @@ class Base {
             $tags[]='<a href="'.$url.'">'.$link['label'].'</a>';
         }
         $html = implode(' | ',$tags);
+        return $html;
+    }
+
+    /**
+     * For specified "lookup"-type field, returns html for Form select OPTIONS elements
+     * @var     string $field
+     * @return  string $html
+     * If record is loaded, current option will include SELECTED attribute
+     * e.g.
+     * <option value="1" SELECTED>One</option><option value="2">Two</option>
+     */
+    public function optionsHtml(string $field) {
+        $list = static::DB_MODEL[$field]['list'] ?? null;
+        if ( !$list ) throw new Exception($field.' not defined as list in data model');
+        $html='';
+        $values=$this->getListValues($list); // expects field to be of type 'list'
+        foreach($values as $key => $label) {
+            $selected = ( $key == $this->get($field) ) ? 'SELECTED' : '';
+            $html .= '<option value="'.$key.'" '.$selected.'>'.htmlspecialchars($label).'</option>';
+        }
         return $html;
     }
 

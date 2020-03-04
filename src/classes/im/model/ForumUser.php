@@ -1,0 +1,83 @@
+<?php
+namespace im\model;
+
+class ForumUser extends Base {
+
+    const DB_TABLE = DB_FORUM_NAME.'.phpbb_users';
+    const PRIMARY_KEYS = ['user_id'];
+    const DB_MODEL = [
+        'user_id'                  => ["type"=>"key"],
+        'user_type'                => ["type"=>"num"],
+        'group_id'                 => ["type"=>"num", "default"=>3],
+        'user_permissions'         => ["type"=>"txt"],
+        'user_perm_from'           => ["type"=>"num"],
+        'user_ip'                  => ["type"=>"txt"],
+        'user_regdate'             => ["type"=>"num"],
+        'username'                 => ["type"=>"txt"],
+        'username_clean'           => ["type"=>"txt"],
+        'user_password'            => ["type"=>"txt"],
+        'user_passchg'             => ["type"=>"num"],
+        'user_email'               => ["type"=>"txt"],
+        'user_email_hash'          => ["type"=>"num"],
+        'user_birthday'            => ["type"=>"txt"],
+        'user_lastvisit'           => ["type"=>"num"],
+        'user_lastmark'            => ["type"=>"num"],
+        'user_lastpost_time'       => ["type"=>"num"],
+        'user_lastpage'            => ["type"=>"txt"],
+        'user_last_confirm_key'    => ["type"=>"txt"],
+        'user_last_search'         => ["type"=>"num"],
+        'user_warnings'            => ["type"=>"num"],
+        'user_last_warning'        => ["type"=>"num"],
+        'user_login_attempts'      => ["type"=>"num"],
+        'user_inactive_reason'     => ["type"=>"num"],
+        'user_inactive_time'       => ["type"=>"num"],
+        'user_posts'               => ["type"=>"num"],
+        'user_lang'                => ["type"=>"txt"],
+        'user_timezone'            => ["type"=>"txt"],
+        'user_dateformat'          => ["type"=>"txt", "default"=>"d M Y H:i"],
+        'user_style'               => ["type"=>"num"],
+        'user_rank'                => ["type"=>"num"],
+        'user_colour'              => ["type"=>"txt"],
+        'user_new_privmsg'         => ["type"=>"num"],
+        'user_unread_privmsg'      => ["type"=>"num"],
+        'user_last_privmsg'        => ["type"=>"num"],
+        'user_message_rules'       => ["type"=>"num"],
+        'user_full_folder'         => ["type"=>"num", "default"=>-3],
+        'user_emailtime'           => ["type"=>"num"],
+        'user_topic_show_days'     => ["type"=>"num"],
+        'user_topic_sortby_type'   => ["type"=>"txt", "default"=>"t"],
+        'user_topic_sortby_dir'    => ["type"=>"txt", "default"=>"d"],
+        'user_post_show_days'      => ["type"=>"num"],
+        'user_post_sortby_type'    => ["type"=>"txt", "default"=>"t"],
+        'user_post_sortby_dir'     => ["type"=>"txt", "default"=>"a"],
+        'user_notify'              => ["type"=>"num"],
+        'user_notify_pm'           => ["type"=>"num", "default"=>1],
+        'user_notify_type'         => ["type"=>"num"],
+        'user_allow_pm'            => ["type"=>"num", "default"=>1],
+        'user_allow_viewonline'    => ["type"=>"num", "default"=>1],
+        'user_allow_viewemail'     => ["type"=>"num", "default"=>1],
+        'user_allow_massemail'     => ["type"=>"num", "default"=>1],
+        'user_options'             => ["type"=>"num", "default"=>230271],
+        'user_avatar'              => ["type"=>"txt"],
+        'user_avatar_type'         => ["type"=>"txt"],
+        'user_avatar_width'        => ["type"=>"num"],
+        'user_avatar_height'       => ["type"=>"num"],
+        'user_sig'                 => ["type"=>"txt"],
+        'user_sig_bbcode_uid'      => ["type"=>"txt"],
+        'user_sig_bbcode_bitfield' => ["type"=>"txt"],
+        'user_jabber'              => ["type"=>"txt"],
+        'user_actkey'              => ["type"=>"txt"],
+        'user_newpasswd'           => ["type"=>"txt"],
+        'user_form_salt'           => ["type"=>"txt"],
+        'user_new'                 => ["type"=>"num", "default"=>1],
+        'user_reminded'            => ["type"=>"num"],
+        'user_reminded_time'       => ["type"=>"num"],
+    ];
+
+    public function resetPermissions() {
+        return $this->update([
+            'user_permissions'  => '',
+            'user_perm_from'    => 0,
+        ]);
+    }
+}
