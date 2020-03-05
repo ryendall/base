@@ -112,6 +112,7 @@ class BaseController {
     protected function jsonError() {
         $msg = json_last_error_msg();
         if ( $msg == 'No error' ) $msg = 'Bad input';
+        return $msg;
     }
 
     protected function exceptionMessage(Exception $e) {
